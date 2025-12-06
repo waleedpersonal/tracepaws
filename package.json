@@ -1,0 +1,52 @@
+{
+  "name": "tracepaws",
+  "version": "1.0.0",
+  "description": "Chain of Custody Software for Pet Crematoriums - B2B SaaS Platform",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "type-check": "tsc --noEmit",
+    "db:setup": "tsx database/complete-setup.sql",
+    "db:test": "tsx database/test-database.sql",
+    "stripe:setup": "tsx scripts/setup-stripe-products.ts"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-toast": "^1.2.15",
+    "@radix-ui/react-tabs": "^1.1.5",
+    "@radix-ui/react-slot": "^1.1.2",
+    "@stripe/stripe-js": "^8.5.3",
+    "@supabase/supabase-js": "^2.86.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dotenv": "^16.3.1",
+    "framer-motion": "^12.23.25",
+    "lucide-react": "^0.555.0",
+    "next": "16.0.7",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-hook-form": "^7.50.1",
+    "stripe": "^20.0.0",
+    "tailwind-merge": "^3.4.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.22",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.7",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4",
+    "tsx": "^4.7.0",
+    "typescript": "^5"
+  },
+  "keywords": ["pet", "crematorium", "chain-of-custody", "b2b", "saas", "tracking", "billing"],
+  "author": "TracePaws Team",
+  "license": "MIT"
+}

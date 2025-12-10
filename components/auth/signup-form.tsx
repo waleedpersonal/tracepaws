@@ -98,67 +98,40 @@ export function SignupForm() {
       if (authError) throw authError
       if (!authData.user) throw new Error('Failed to create account')
 
-      // Create organization record
+      // Create organization record using service role
       const slug = formData.businessName.toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
         .trim()
 
-      const { data: orgData, error: orgError } = await supabase
-        .from('organizations')
-        .insert({
-          name: formData.businessName.trim(),
-          slug: slug,
+      // Call our API endpoint to create organization and user profile
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: authData.user.id,
           email: formData.email.toLowerCase().trim(),
-          settings: {
-            checkpoints: [
-              { code: 'intake', label: 'Received', required: true, photo_required: true, min_photos: 1 },
-              { code: 'prepared', label: 'Prepared for Cremation', required: true, photo_required: true, min_photos: 1 },
-              { code: 'entering_chamber', label: 'Entering Chamber', required: true, photo_required: true, min_photos: 2 },
-              { code: 'cremated', label: 'Cremation Complete', required: true, photo_required: true, min_photos: 1 },
-              { code: 'packaged', label: 'Packaged', required: true, photo_required: true, min_photos: 1 },
-              { code: 'ready', label: 'Ready for Pickup', required: true, photo_required: false },
-              { code: 'completed', label: 'Picked Up / Delivered', required: false, photo_required: false }
-            ],
-            service_types: [
-              { code: 'private', label: 'Private Cremation', enabled: true },
-              { code: 'individual', label: 'Individual Cremation', enabled: true },
-              { code: 'communal', label: 'Communal Cremation', enabled: true }
-            ],
-            notifications: {
-              email_intake: true,
-              email_complete: true,
-              email_ready: true,
-              sms_intake: true,
-              sms_ready: true
-            }
-          }
-        })
-        .select()
-        .single()
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          businessName: formData.businessName.trim(),
+          slug: slug
+        }),
+      })
 
-      if (orgError) throw orgError
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create organization')
+      }
 
-      // Create user profile linked to organization
-      const { error: userError } = await supabase
-        .from('users')
-        .insert({
-          auth_id: authData.user.id,
-          organization_id: orgData.id,
-          email: formData.email.toLowerCase().trim(),
-          first_name: formData.firstName.trim(),
-          last_name: formData.lastName.trim(),
-          role: 'owner'
-        })
-
-      if (userError) throw userError
-
-      // Success - redirect to dashboard or email verification
+      // Success - redirect based on email confirmation status
       if (authData.user.email_confirmed_at) {
         router.push('/dashboard')
       } else {
-        router.push('/verify-email')
+        // Email verification required
+        router.push('/verify-email?email=' + encodeURIComponent(formData.email))
       }
 
     } catch (error: any) {
@@ -253,7 +226,7 @@ export function SignupForm() {
         )}
 
         {/* Name fields */}
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }} className="form-row">
           <div style={{ flex: 1 }}>
             <label
               style={{
@@ -428,7 +401,7 @@ export function SignupForm() {
         </div>
 
         {/* Password fields */}
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }} className="form-row">
           <div style={{ flex: 1 }}>
             <label
               style={{
@@ -557,6 +530,7 @@ export function SignupForm() {
             alignItems: 'center',
             marginTop: '32px'
           }}
+          className="form-actions"
         >
           <a
             href="/login"
@@ -569,6 +543,7 @@ export function SignupForm() {
               borderRadius: '4px',
               transition: 'background-color 0.2s ease'
             }}
+            className="sign-in-link"
           >
             Sign in instead
           </a>
@@ -589,6 +564,7 @@ export function SignupForm() {
               minWidth: '80px',
               position: 'relative'
             }}
+            className="next-button"
           >
             {loading ? (
               <span style={{ color: 'transparent' }}>
@@ -623,13 +599,6 @@ export function SignupForm() {
         }
         
         @media (max-width: 480px) {
-          .signup-card {
-            padding: 36px 28px !important;
-            border-radius: 20px !important;
-            max-width: none !important;
-            margin: 0 10px !important;
-          }
-          
           .form-row {
             flex-direction: column !important;
             gap: 24px !important;
